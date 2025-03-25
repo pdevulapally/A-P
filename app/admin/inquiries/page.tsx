@@ -19,14 +19,24 @@ import { getAllInquiries, updateInquiryStatus, deleteInquiry } from "@/lib/fireb
 import { useToast } from "@/hooks/use-toast"
 import { InquiryDetails } from "@/components/admin/inquiry-details"
 
+interface Inquiry {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  status: "pending" | "responded";
+  createdAt: string;
+  message: string;
+}
+
 export default function InquiriesPage() {
-  const [inquiries, setInquiries] = useState([])
+  const [inquiries, setInquiries] = useState<Inquiry[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedInquiry, setSelectedInquiry] = useState(null)
+  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [inquiryToDelete, setInquiryToDelete] = useState(null)
+  const [inquiryToDelete, setInquiryToDelete] = useState<Inquiry | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -50,12 +60,12 @@ export default function InquiriesPage() {
     }
   }
 
-  const handleViewDetails = (inquiry) => {
+  const handleViewDetails = (inquiry: Inquiry) => {
     setSelectedInquiry(inquiry)
     setIsDetailsOpen(true)
   }
 
-  const handleStatusChange = async (inquiry, newStatus) => {
+  const handleStatusChange = async (inquiry: Inquiry, newStatus: "pending" | "responded") => {
     try {
       await updateInquiryStatus(inquiry.id, newStatus)
       setInquiries(inquiries.map((i) => (i.id === inquiry.id ? { ...i, status: newStatus } : i)))
@@ -73,12 +83,14 @@ export default function InquiriesPage() {
     }
   }
 
-  const handleDelete = (inquiry) => {
+  const handleDelete = (inquiry: Inquiry) => {
     setInquiryToDelete(inquiry)
     setDeleteDialogOpen(true)
   }
 
   const confirmDelete = async () => {
+    if (!inquiryToDelete) return;
+    
     try {
       await deleteInquiry(inquiryToDelete.id)
       setInquiries(inquiries.filter((i) => i.id !== inquiryToDelete.id))

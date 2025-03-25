@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, FolderOpen, Settings, Users, MessageSquare, FileText, LogOut } from "lucide-react"
+import { LayoutDashboard, FolderOpen, Settings, Users, MessageSquare, FileText, LogOut, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/use-auth"
 
@@ -36,6 +36,11 @@ const navItems = [
     title: "Settings",
     href: "/admin/settings",
     icon: Settings,
+  },
+  {
+    title: "Admin Users",
+    href: "/admin/users",
+    icon: UserPlus
   },
 ]
 

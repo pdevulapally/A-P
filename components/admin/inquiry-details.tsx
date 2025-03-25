@@ -17,14 +17,29 @@ import { updateInquiryStatus } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 
-export function InquiryDetails({ open, onClose, inquiry }) {
+interface InquiryDetailsProps {
+  open: boolean;
+  onClose: () => void;
+  inquiry: {
+    id: string;
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    status: string;
+    createdAt: string;
+    response?: string;
+  } | null;
+}
+
+export function InquiryDetails({ open, onClose, inquiry }: InquiryDetailsProps) {
   const [response, setResponse] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
 
   if (!inquiry) return null
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
 

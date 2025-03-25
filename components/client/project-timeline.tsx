@@ -6,8 +6,19 @@ import { Badge } from "@/components/ui/badge"
 import { Loader2 } from "lucide-react"
 import { getProjectTimeline } from "@/lib/firebase"
 
-export function ProjectTimeline({ projectId }) {
-  const [timeline, setTimeline] = useState([])
+interface TimelineEvent {
+  title: string;
+  description: string;
+  type: string;
+  date: string;
+}
+
+interface ProjectTimelineProps {
+  projectId: string;
+}
+
+export function ProjectTimeline({ projectId }: ProjectTimelineProps) {
+  const [timeline, setTimeline] = useState<TimelineEvent[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -15,7 +26,7 @@ export function ProjectTimeline({ projectId }) {
       try {
         setLoading(true)
         const data = await getProjectTimeline(projectId)
-        setTimeline(data)
+        setTimeline((data as unknown) as TimelineEvent[])
       } catch (error) {
         console.error("Error fetching project timeline:", error)
       } finally {

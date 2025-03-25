@@ -17,7 +17,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 // Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend)
 
-export function Overview({ data }) {
+interface ChartData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    backgroundColor: string;
+    borderColor: string;
+    borderWidth: number;
+  }[];
+}
+
+interface OverviewProps {
+  data?: {
+    revenue: ChartData;
+    projects: ChartData;
+  };
+}
+
+export function Overview({ data }: OverviewProps) {
   const defaultData = {
     revenue: {
       labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
@@ -51,7 +69,7 @@ export function Overview({ data }) {
     responsive: true,
     plugins: {
       legend: {
-        position: "top",
+        position: "top" as const,
       },
     },
     scales: {

@@ -13,9 +13,20 @@ import { getServiceBySlug } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
 import NotFound from "@/app/not-found"
 
+interface Service {
+  id: string;
+  title: string;
+  description: string;
+  features: string[];
+  icon: string;
+  process?: Array<{ title: string; description: string }>;
+  benefits?: Array<{ title: string; description: string }>;
+  faq?: Array<{ question: string; answer: string }>;
+}
+
 export default function ServiceDetails() {
   const { slug } = useParams()
-  const [service, setService] = useState(null)
+  const [service, setService] = useState<Service | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const { toast } = useToast()
@@ -24,11 +35,13 @@ export default function ServiceDetails() {
     const fetchService = async () => {
       try {
         setLoading(true)
-        const data = await getServiceBySlug(slug)
-        if (data) {
-          setService(data)
-        } else {
-          setNotFound(true)
+        if (typeof slug === 'string') {
+          const data = await getServiceBySlug(slug)
+          if (data && 'title' in data && 'description' in data && 'features' in data && 'icon' in data) {
+            setService(data as Service)
+          } else {
+            setNotFound(true)
+          }
         }
       } catch (error) {
         console.error("Error fetching service:", error)
@@ -58,6 +71,10 @@ export default function ServiceDetails() {
 
   if (notFound) {
     return <NotFound />
+  }
+
+  if (!service) {
+    return null
   }
 
   return (
@@ -213,7 +230,7 @@ export default function ServiceDetails() {
   )
 }
 
-function ServiceScene({ icon }) {
+function ServiceScene({ icon }: { icon: string }) {
   // Render different 3D objects based on the service icon
   switch (icon) {
     case "Palette":

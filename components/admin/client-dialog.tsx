@@ -16,7 +16,19 @@ import { Loader2 } from "lucide-react"
 import { addClient, updateClient } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
 
-export function ClientDialog({ open, onClose, client }) {
+interface ClientDialogProps {
+  open: boolean;
+  onClose: (refresh?: boolean) => void;
+  client?: {
+    id: string;
+    name?: string;
+    email?: string;
+    companyName?: string;
+    phone?: string;
+  } | null;
+}
+
+export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -48,12 +60,12 @@ export function ClientDialog({ open, onClose, client }) {
     })
   }
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
 

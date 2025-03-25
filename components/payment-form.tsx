@@ -14,14 +14,14 @@ interface PaymentFormProps {
     name: string
     price: number
   }
-  onSuccess: () => void
+  onSuccessAction: () => void
 }
 
-export default function PaymentForm({ type, plan, onSuccess }: PaymentFormProps) {
+export default function PaymentForm({ type, plan, onSuccessAction }: PaymentFormProps) {
   const [isProcessing, setIsProcessing] = useState(false)
   const { toast } = useToast()
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsProcessing(true)
 
@@ -35,7 +35,7 @@ export default function PaymentForm({ type, plan, onSuccess }: PaymentFormProps)
         // Additional form data would be collected here
       })
 
-      onSuccess()
+      onSuccessAction()
     } catch (error) {
       toast({
         title: "Payment failed",

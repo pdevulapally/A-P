@@ -20,14 +20,23 @@ import { getAllClients, deleteClient } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
 import { ClientDialog } from "@/components/admin/client-dialog"
 
+interface Client {
+  id: string;
+  name: string;
+  email: string;
+  companyName?: string;
+  projectCount?: number;
+  createdAt: string;
+}
+
 export default function ClientsPage() {
-  const [clients, setClients] = useState([])
+  const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [selectedClient, setSelectedClient] = useState(null)
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [clientToDelete, setClientToDelete] = useState(null)
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -56,20 +65,20 @@ export default function ClientsPage() {
     setIsDialogOpen(true)
   }
 
-  const handleEdit = (client) => {
+  const handleEdit = (client: Client) => {
     setSelectedClient(client)
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (client) => {
+  const handleDelete = (client: Client) => {
     setClientToDelete(client)
     setDeleteDialogOpen(true)
   }
 
   const confirmDelete = async () => {
     try {
-      await deleteClient(clientToDelete.id)
-      setClients(clients.filter((c) => c.id !== clientToDelete.id))
+      await deleteClient(clientToDelete!.id)
+      setClients(clients.filter((c) => c.id !== clientToDelete!.id))
       toast({
         title: "Success",
         description: "Client deleted successfully",
@@ -95,7 +104,7 @@ export default function ClientsPage() {
   }
 
   const filteredClients = clients.filter(
-    (client) =>
+    (client: Client) =>
       client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (client.companyName && client.companyName.toLowerCase().includes(searchQuery.toLowerCase())),

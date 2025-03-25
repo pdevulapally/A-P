@@ -18,7 +18,20 @@ import { Loader2 } from "lucide-react"
 import { updateClient, addClientNote } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
 
-export function ClientUpdateDialog({ open, onClose, client }) {
+export interface ClientUpdateDialogProps {
+  open: boolean;
+  onClose: (refreshData?: boolean) => void;
+  client: {
+    id: string;
+    name: string;
+    email: string;
+    companyName?: string;
+    phone?: string;
+    createdAt: string;
+  };
+}
+
+export function ClientUpdateDialog({ open, onClose, client }: ClientUpdateDialogProps) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -41,12 +54,12 @@ export function ClientUpdateDialog({ open, onClose, client }) {
     }
   }, [client])
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
 
@@ -69,7 +82,7 @@ export function ClientUpdateDialog({ open, onClose, client }) {
     }
   }
 
-  const handleAddNote = async (e) => {
+  const handleAddNote = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     if (!note.trim()) return

@@ -14,8 +14,13 @@ import { Mountain, LogOut, User, Settings } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 
+interface User {
+  displayName?: string;
+  email?: string;
+}
+
 export function AdminHeader() {
-  const { user, logout } = useAuth()
+  const { user, logout }: { user: User | null; logout: () => void } = useAuth()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">

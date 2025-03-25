@@ -103,15 +103,7 @@ export default function ContactPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="flex items-start space-x-4">
-              <div className="bg-primary/20 p-3 rounded-full">
-                <MapPin className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Our Location</h3>
-                <p className="text-muted-foreground">123 Innovation Drive, Tech Valley, CA 94103</p>
-              </div>
-            </div>
+
 
             <div className="flex items-start space-x-4">
               <div className="bg-primary/20 p-3 rounded-full">
@@ -120,16 +112,6 @@ export default function ContactPage() {
               <div>
                 <h3 className="text-lg font-semibold">Email Us</h3>
                 <p className="text-muted-foreground">hello@arjunandpreetham.com</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4">
-              <div className="bg-primary/20 p-3 rounded-full">
-                <Phone className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Call Us</h3>
-                <p className="text-muted-foreground">+1 (555) 123-4567</p>
               </div>
             </div>
           </div>

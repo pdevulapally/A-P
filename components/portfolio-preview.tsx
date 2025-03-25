@@ -9,21 +9,21 @@ import Image from "next/image"
 export default function PortfolioPreview() {
   const projects = [
     {
-      title: "Quantum E-commerce Platform",
-      description: "A next-generation e-commerce platform with 3D product visualization.",
-      image: "/placeholder.svg?height=400&width=600",
+      title: "Senj Jewels E-Commerce",
+      description: "A next-generation e-commerce platform with a focus on luxury jewelry.",
+      image: "/Images/Senjewels.png",
       link: "/portfolio",
     },
     {
-      title: "Nebula Analytics Dashboard",
-      description: "An interactive analytics dashboard with real-time data visualization.",
-      image: "/placeholder.svg?height=400&width=600",
+      title: "MoodTunes",
+      description: "An interactive music player that adapts to your mood and activity.",
+      image: "/Images/MoodSyncTunes.png",
       link: "/portfolio",
     },
     {
-      title: "Pulse Social Network",
-      description: "A modern social platform with immersive 3D spaces for virtual meetups.",
-      image: "/placeholder.svg?height=400&width=600",
+      title: "Westminster Hindu Society",
+      description: "A modern website for a university society to showcase events and activities.",
+      image: "/Images/WestminsterHinduSociety.png",
       link: "/portfolio",
     },
   ]

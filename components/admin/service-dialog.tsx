@@ -18,8 +18,35 @@ import { Loader2, Plus, X } from "lucide-react"
 import { addService, updateService } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
 
-export function ServiceDialog({ open, onClose, service }) {
-  const [formData, setFormData] = useState({
+interface ServiceDialogProps {
+  open: boolean;
+  onClose: (refresh?: boolean) => void;
+  service?: {
+    id: string;
+    title: string;
+    slug: string;
+    description: string;
+    icon: string;
+    features: string[];
+    process: Array<{ title: string; description: string }>;
+    benefits: Array<{ title: string; description: string }>;
+    faq: Array<{ question: string; answer: string }>;
+  } | null;
+}
+
+interface FormData {
+  title: string;
+  slug: string;
+  description: string;
+  icon: string;
+  features: string[];
+  process: Array<{ title: string; description: string }>;
+  benefits: Array<{ title: string; description: string }>;
+  faq: Array<{ question: string; answer: string }>;
+}
+
+export function ServiceDialog({ open, onClose, service }: ServiceDialogProps) {
+  const [formData, setFormData] = useState<FormData>({
     title: "",
     slug: "",
     description: "",
@@ -61,7 +88,7 @@ export function ServiceDialog({ open, onClose, service }) {
     setNewFaqItem({ question: "", answer: "" })
   }
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
 
@@ -78,7 +105,7 @@ export function ServiceDialog({ open, onClose, service }) {
     }
   }
 
-  const handleSelectChange = (name, value) => {
+  const handleSelectChange = (name: string, value: string) => {
     setFormData({ ...formData, [name]: value })
   }
 
@@ -92,7 +119,7 @@ export function ServiceDialog({ open, onClose, service }) {
     }
   }
 
-  const removeFeature = (index) => {
+  const removeFeature = (index: number) => {
     const updatedFeatures = [...formData.features]
     updatedFeatures.splice(index, 1)
     setFormData({ ...formData, features: updatedFeatures })
@@ -108,7 +135,7 @@ export function ServiceDialog({ open, onClose, service }) {
     }
   }
 
-  const removeProcessStep = (index) => {
+  const removeProcessStep = (index: number) => {
     const updatedProcess = [...formData.process]
     updatedProcess.splice(index, 1)
     setFormData({ ...formData, process: updatedProcess })
@@ -124,7 +151,7 @@ export function ServiceDialog({ open, onClose, service }) {
     }
   }
 
-  const removeBenefit = (index) => {
+  const removeBenefit = (index: number) => {
     const updatedBenefits = [...formData.benefits]
     updatedBenefits.splice(index, 1)
     setFormData({ ...formData, benefits: updatedBenefits })
@@ -140,13 +167,13 @@ export function ServiceDialog({ open, onClose, service }) {
     }
   }
 
-  const removeFaqItem = (index) => {
+  const removeFaqItem = (index: number) => {
     const updatedFaq = [...formData.faq]
     updatedFaq.splice(index, 1)
     setFormData({ ...formData, faq: updatedFaq })
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
 

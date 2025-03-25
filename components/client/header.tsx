@@ -14,8 +14,18 @@ import { Mountain, LogOut, User, Settings } from "lucide-react"
 import Link from "next/link"
 import { useClientAuth } from "@/hooks/use-client-auth"
 
+interface ClientUser {
+  displayName?: string;
+  email?: string;
+}
+
+interface AuthReturn {
+  user: ClientUser | null;
+  logout: () => void;
+}
+
 export function ClientHeader() {
-  const { user, logout } = useClientAuth()
+  const { user, logout } = useClientAuth() as AuthReturn
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, FormEvent, ChangeEvent } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,7 +8,23 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Mountain, AlertCircle } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+import { adminLogin } from "@/lib/firebase"
+
+interface AuthContextType {
+  login: (email: string, password: string) => Promise<void>;
+}
+
+export function useAuth(): AuthContextType {
+  const login = async (email: string, password: string) => {
+    try {
+      await adminLogin(email, password)
+    } catch (error) {
+      throw error
+    }
+  }
+
+  return { login }
+} 
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("")
@@ -18,7 +34,7 @@ export default function AdminLogin() {
   const router = useRouter()
   const { login } = useAuth()
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError("")
     setLoading(true)

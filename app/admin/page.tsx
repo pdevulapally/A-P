@@ -4,19 +4,61 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Overview } from "@/components/admin/overview"
-import { RecentActivity } from "@/components/admin/recent-activity"
 import { getDashboardStats } from "@/lib/firebase"
 import { Loader2 } from "lucide-react"
 
+interface Activity {
+  id: string;
+  type: string;
+  description: string;
+  date: string;
+}
+
+interface DashboardStats {
+  totalProjects: number;
+  newProjects: number;
+  activeClients: number;
+  newClients: number;
+  revenue: number;
+  revenueIncrease: number;
+  pendingInquiries: number;
+  inquiryIncrease: number;
+  overviewData: any;
+  recentActivities: Activity[];
+}
+
+export function RecentActivity({ activities = [] }: { activities?: Activity[] }) {
+  return (
+    <div>
+      {activities.map(activity => (
+        <div key={activity.id}>
+          <p>{activity.type}</p>
+          <p>{activity.description}</p>
+          <p>{activity.date}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
-  const [stats, setStats] = useState(null)
+  const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const data = await getDashboardStats()
-        setStats(data)
+        const transformedData = {
+          ...data,
+          recentActivities: data.recentActivities.map(activity => ({
+            id: String(activity.id),
+            type: activity.type,
+            description: activity.content,
+            date: activity.timestamp
+          }))
+        }
+        setStats(transformedData)
       } catch (error) {
         console.error("Error fetching dashboard stats:", error)
       } finally {
@@ -130,7 +172,7 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{stats?.pendingInquiries || 0}</div>
             <p className="text-xs text-muted-foreground">
-              {stats?.inquiryIncrease > 0 ? "+" : ""}
+              {(stats?.inquiryIncrease ?? 0) > 0 ? "+" : ""}
               {stats?.inquiryIncrease || 0}% since last month
             </p>
           </CardContent>

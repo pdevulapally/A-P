@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,7 +23,21 @@ import NotFound from "@/app/not-found"
 export default function ProjectDetails() {
   const { id } = useParams()
   const { user } = useClientAuth()
-  const [project, setProject] = useState(null)
+  interface Project {
+    id: string;
+    title: string;
+    description: string;
+    progress: number;
+    status: "completed" | "in-progress" | "planning" | string;
+    startDate: string;
+    dueDate: string;
+    currentPhase: string;
+    phaseDescription: string;
+    livePreviewUrl?: string;
+    documents?: { name: string; uploadedAt: string; url: string }[];
+  }
+  
+  const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [unauthorized, setUnauthorized] = useState(false)
@@ -32,7 +48,8 @@ export default function ProjectDetails() {
 
       try {
         setLoading(true)
-        const data = await getClientProject(id, user.uid)
+        const projectId = Array.isArray(id) ? id[0] : id
+        const data = await getClientProject(projectId, (user as { uid: string }).uid)
 
         if (!data) {
           setNotFound(true)
@@ -40,7 +57,7 @@ export default function ProjectDetails() {
         }
 
         // Check if this project belongs to the current user
-        if (data.clientId !== user.uid) {
+        if (data.clientId !== (user as { uid: string }).uid) {
           setUnauthorized(true)
           return
         }
@@ -83,6 +100,8 @@ export default function ProjectDetails() {
     )
   }
 
+  if (!project) return null;
+
   return (
     <div className="container mx-auto py-8 px-4 md:px-6">
       <div className="mb-4">
@@ -91,23 +110,23 @@ export default function ProjectDetails() {
         </Link>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <TypewriterEffect text={project.title} className="text-3xl md:text-4xl font-bold mb-2" />
-            <p className="text-muted-foreground">{project.description}</p>
+            <TypewriterEffect text={project!.title} className="text-3xl md:text-4xl font-bold mb-2" />
+            <p className="text-muted-foreground">{project!.description}</p>
           </div>
           <Badge
             className={`text-base py-1 px-3 ${
-              project.status === "completed"
+              project!.status === "completed"
                 ? "bg-green-500"
-                : project.status === "in-progress"
+                : project!.status === "in-progress"
                   ? "bg-blue-500"
-                  : project.status === "planning"
+                  : project!.status === "planning"
                     ? "bg-amber-500"
                     : "bg-slate-500"
             }`}
           >
-            {project.status === "in-progress"
+            {project!.status === "in-progress"
               ? "In Progress"
-              : project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+              : project!.status.charAt(0).toUpperCase() + project!.status.slice(1)}
           </Badge>
         </div>
       </div>
@@ -124,9 +143,9 @@ export default function ProjectDetails() {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span>Overall Progress</span>
-                    <span>{project.progress}%</span>
+                    <span>{project?.progress ?? 0}%</span>
                   </div>
-                  <Progress value={project.progress} className="h-3" />
+                  <Progress value={project?.progress ?? 0} className="h-3" />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -135,11 +154,11 @@ export default function ProjectDetails() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-3 bg-muted rounded-md">
                         <p className="text-xs text-muted-foreground">Start Date</p>
-                        <p className="font-medium">{new Date(project.startDate).toLocaleDateString()}</p>
+                        <p className="font-medium">{new Date(project!.startDate).toLocaleDateString()}</p>
                       </div>
                       <div className="p-3 bg-muted rounded-md">
                         <p className="text-xs text-muted-foreground">Due Date</p>
-                        <p className="font-medium">{new Date(project.dueDate).toLocaleDateString()}</p>
+                        <p className="font-medium">{new Date(project!.dueDate).toLocaleDateString()}</p>
                       </div>
                     </div>
                   </div>
@@ -147,16 +166,16 @@ export default function ProjectDetails() {
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium text-muted-foreground">Current Phase</h3>
                     <div className="p-3 bg-muted rounded-md">
-                      <p className="font-medium">{project.currentPhase}</p>
-                      <p className="text-sm text-muted-foreground">{project.phaseDescription}</p>
-                    </div>
+                        <p className="font-medium">{project!.currentPhase}</p>
+                        <p className="text-sm text-muted-foreground">{project?.phaseDescription}</p>
+                      </div>
                   </div>
                 </div>
 
-                {project.livePreviewUrl && (
+                {project?.livePreviewUrl && (
                   <div className="pt-2">
                     <Button asChild>
-                      <a href={project.livePreviewUrl} target="_blank" rel="noopener noreferrer">
+                      <a href={project?.livePreviewUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="h-4 w-4 mr-2" /> View Live Preview
                       </a>
                     </Button>
@@ -189,11 +208,11 @@ export default function ProjectDetails() {
         </TabsList>
 
         <TabsContent value="timeline" className="mt-6">
-          <ProjectTimeline projectId={project.id} />
+          <ProjectTimeline projectId={project!.id} />
         </TabsContent>
 
         <TabsContent value="messages" className="mt-6">
-          <ProjectMessages projectId={project.id} />
+          <ProjectMessages projectId={project!.id} />
         </TabsContent>
 
         <TabsContent value="documents" className="mt-6">
@@ -204,7 +223,7 @@ export default function ProjectDetails() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {project.documents?.length > 0 ? (
+                {project?.documents && project.documents.length > 0 ? (
                   project.documents.map((doc, index) => (
                     <div key={index} className="flex items-center justify-between p-3 border rounded-md">
                       <div className="flex items-center">

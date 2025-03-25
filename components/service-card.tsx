@@ -3,16 +3,19 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import * as LucideIcons from "lucide-react"
+import type { LucideProps, LucideIcon } from 'lucide-react'
+
+type IconName = keyof typeof LucideIcons;
 
 interface ServiceCardProps {
   title: string
   description: string
-  icon: string
+  icon: IconName
   features: string[]
 }
 
 export default function ServiceCard({ title, description, icon, features }: ServiceCardProps) {
-  const Icon = LucideIcons[icon]
+  const Icon = LucideIcons[icon] as React.ComponentType<LucideProps>
 
   return (
     <Card className="h-full bg-background/60 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-colors">

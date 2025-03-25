@@ -18,16 +18,16 @@ import { Loader2, Plus, MoreHorizontal, Search, Trash, Edit, Eye } from "lucide-
 import Link from "next/link"
 import { getAllProjects, deleteProject } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
-import { ProjectDialog } from "@/components/admin/project-dialog"
+import { ProjectDialog, type ProjectData } from "@/components/admin/project-dialog"
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState([])
+  const [projects, setProjects] = useState<ProjectData[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [selectedProject, setSelectedProject] = useState(null)
+  const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [projectToDelete, setProjectToDelete] = useState(null)
+  const [projectToDelete, setProjectToDelete] = useState<ProjectData | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -56,19 +56,21 @@ export default function ProjectsPage() {
     setIsDialogOpen(true)
   }
 
-  const handleEdit = (project) => {
+  const handleEdit = (project: ProjectData) => {
     setSelectedProject(project)
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (project) => {
+  const handleDelete = (project: ProjectData) => {
     setProjectToDelete(project)
     setDeleteDialogOpen(true)
   }
 
   const confirmDelete = async () => {
+    if (!projectToDelete?.id) return;
+    
     try {
-      await deleteProject(projectToDelete.id)
+      await deleteProject(projectToDelete.id as string)
       setProjects(projects.filter((p) => p.id !== projectToDelete.id))
       toast({
         title: "Success",

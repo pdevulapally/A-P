@@ -1,14 +1,36 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage
+} from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Loader2 } from "lucide-react"
 import { getProjectTeam } from "@/lib/firebase"
 
-export function ProjectTeam({ projectId }) {
-  const [team, setTeam] = useState([])
+// ✅ Define TypeScript interface for team members
+interface TeamMember {
+  name: string
+  role: string
+  avatar?: string
+  department?: string
+}
+
+interface ProjectTeamProps {
+  projectId: string
+}
+
+export function ProjectTeam({ projectId }: ProjectTeamProps) {
+  const [team, setTeam] = useState<TeamMember[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -43,7 +65,9 @@ export function ProjectTeam({ projectId }) {
           <CardDescription>Meet the team working on your project</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">No team members assigned yet</div>
+          <div className="text-center py-8 text-muted-foreground">
+            No team members assigned yet
+          </div>
         </CardContent>
       </Card>
     )
@@ -60,15 +84,20 @@ export function ProjectTeam({ projectId }) {
           {team.map((member, index) => (
             <div key={index} className="flex items-start space-x-4">
               <Avatar className="h-12 w-12">
-                <AvatarImage src={member.avatar || "/placeholder.svg?height=48&width=48"} alt={member.name} />
+                <AvatarImage
+                  src={member.avatar || "/placeholder.svg?height=48&width=48"}
+                  alt={member.name}
+                />
                 <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
                 <h3 className="font-medium">{member.name}</h3>
                 <p className="text-sm text-muted-foreground">{member.role}</p>
-                <div className="mt-2">
-                  <Badge variant="outline">{member.department}</Badge>
-                </div>
+                {member.department && (
+                  <div className="mt-2">
+                    <Badge variant="outline">{member.department}</Badge>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -77,4 +106,3 @@ export function ProjectTeam({ projectId }) {
     </Card>
   )
 }
-

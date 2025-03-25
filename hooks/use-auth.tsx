@@ -1,13 +1,24 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth"
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, User } from "firebase/auth"
 import { useFirebase } from "@/components/firebase-provider"
 
-const AuthContext = createContext(null)
+interface AuthContextType {
+  user: any;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<any>;
+  logout: () => Promise<void>;
+}
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+interface AuthProviderProps {
+  children: React.ReactNode;
+}
+
+const AuthContext = createContext<AuthContextType | null>(null)
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const { auth, isInitialized } = useFirebase()
 
@@ -25,7 +36,7 @@ export function AuthProvider({ children }) {
     return () => unsubscribe()
   }, [auth, isInitialized])
 
-  const login = async (email, password) => {
+  const login = async (email: string, password: string) => {
     if (!auth) throw new Error("Auth not initialized")
     return signInWithEmailAndPassword(auth, email, password)
   }

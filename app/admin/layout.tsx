@@ -8,6 +8,7 @@ import { Sidebar } from "@/components/admin/sidebar"
 import { AdminHeader } from "@/components/admin/header"
 import { useAuth } from "@/hooks/use-auth"
 import { Loader2 } from "lucide-react"
+import ProtectedRoute from "@/components/admin/protected-route"
 
 export default function AdminLayout({
   children,

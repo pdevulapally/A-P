@@ -11,15 +11,38 @@ import { Loader2, ArrowLeft, Plus, Edit, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { getClientById, getClientProjects } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
-import { ProjectDialog } from "@/components/admin/project-dialog"
-import { ClientUpdateDialog } from "@/components/admin/client-update-dialog"
+import { ProjectDialog, type ProjectData } from "@/components/admin/project-dialog"
+import { ClientUpdateDialog, type ClientUpdateDialogProps } from "@/components/admin/client-update-dialog"
 import NotFound from "@/app/not-found"
+import React from "react"
 
-export default function ClientDetailsPage() {
+interface Payment {
+  invoice: string;
+  amount: number;
+  date: Date;
+  status: string;
+}
+
+interface ProjectDialogProps {
+  open: boolean;
+  onClose: (refresh?: boolean) => void;
+  project: ProjectData;
+}
+
+// Note: This interface is for documentation only since it's not being used
+interface IProjectDialogProps {
+  open: boolean;
+  onClose: (refreshData?: boolean) => void;
+  project: any;
+  clientId: string | string[];
+}
+
+export default function ClientPage() {
   const { id } = useParams()
   const router = useRouter()
-  const [client, setClient] = useState(null)
-  const [projects, setProjects] = useState([])
+  const clientId = Array.isArray(id) ? id[0] : id
+  const [client, setClient] = useState<any>(null)
+  const [projects, setProjects] = useState<Array<{ startDate: any; dueDate: any; createdAt: any; id: string; title: string; status: string; progress: number }>>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false)
@@ -30,8 +53,7 @@ export default function ClientDetailsPage() {
   useEffect(() => {
     const fetchClientData = async () => {
       try {
-        setLoading(true)
-        const clientData = await getClientById(id)
+        const clientData = await getClientById(clientId)
 
         if (!clientData) {
           setNotFound(true)
@@ -40,9 +62,15 @@ export default function ClientDetailsPage() {
 
         setClient(clientData)
 
-        // Fetch client's projects
-        const projectsData = await getClientProjects(id)
-        setProjects(projectsData)
+        const projectsData = await getClientProjects(clientId)
+        setProjects(
+          projectsData.map((project: any) => ({
+            ...project,
+            title: project.title || "Untitled",
+            status: project.status || "in-progress",
+            progress: project.progress !== undefined ? project.progress : 0,
+          }))
+        )
       } catch (error) {
         console.error("Error fetching client data:", error)
         toast({
@@ -66,7 +94,7 @@ export default function ClientDetailsPage() {
     setIsProjectDialogOpen(true)
   }
 
-  const handleEditProject = (project) => {
+  const handleEditProject = (project: any) => {
     setSelectedProject(project)
     setIsProjectDialogOpen(true)
   }
@@ -78,16 +106,23 @@ export default function ClientDetailsPage() {
   const handleProjectDialogClose = (refreshData = false) => {
     setIsProjectDialogOpen(false)
     if (refreshData) {
-      // Refresh projects data
-      getClientProjects(id).then((data) => setProjects(data))
+      getClientProjects(clientId).then((data) => {
+        setProjects(
+          data.map((project: any) => ({
+            ...project,
+            title: project.title || "Untitled",
+            status: project.status || "in-progress",
+            progress: project.progress !== undefined ? project.progress : 0,
+          }))
+        )
+      })
     }
   }
 
   const handleClientDialogClose = (refreshData = false) => {
     setIsClientDialogOpen(false)
     if (refreshData) {
-      // Refresh client data
-      getClientById(id).then((data) => setClient(data))
+      getClientById(clientId).then((data) => setClient(data))
     }
   }
 
@@ -232,8 +267,8 @@ export default function ClientDetailsPage() {
             <CardContent>
               {client.activities && client.activities.length > 0 ? (
                 <div className="space-y-4">
-                  {client.activities.map((activity, index) => (
-                    <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-0">
+                  {client.activities.map((activity: any, index: number) => (
+                        <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-0">
                       <div className="w-2 h-2 mt-2 rounded-full bg-primary"></div>
                       <div>
                         <p className="font-medium">{activity.description}</p>
@@ -258,14 +293,14 @@ export default function ClientDetailsPage() {
             <CardContent>
               {client.notes && client.notes.length > 0 ? (
                 <div className="space-y-4">
-                  {client.notes.map((note, index) => (
-                    <div key={index} className="p-4 border rounded-md">
-                      <p className="whitespace-pre-wrap">{note.content}</p>
-                      <div className="flex justify-between items-center mt-2 text-sm text-muted-foreground">
-                        <span>By: {note.author}</span>
-                        <span>{new Date(note.timestamp).toLocaleString()}</span>
-                      </div>
-                    </div>
+                  {client.notes.map((note: { content: string; author: string; timestamp: Date }, index: number) => (
+                        <div key={index} className="p-4 border rounded-md">
+                          <p className="whitespace-pre-wrap">{note.content}</p>
+                          <div className="flex justify-between items-center mt-2 text-sm text-muted-foreground">
+                            <span>By: {note.author}</span>
+                            <span>{new Date(note.timestamp).toLocaleString()}</span>
+                          </div>
+                        </div>
                   ))}
                 </div>
               ) : (
@@ -294,7 +329,7 @@ export default function ClientDetailsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {client.payments.map((payment, index) => (
+                      {client.payments.map((payment: Payment, index: number) => (
                         <TableRow key={index}>
                           <TableCell className="font-medium">{payment.invoice}</TableCell>
                           <TableCell>${payment.amount.toFixed(2)}</TableCell>
@@ -330,8 +365,7 @@ export default function ClientDetailsPage() {
       <ProjectDialog
         open={isProjectDialogOpen}
         onClose={handleProjectDialogClose}
-        project={selectedProject}
-        clientId={id}
+        project={{ ...(selectedProject || {}), client: id || '' } as ProjectData}
       />
 
       <ClientUpdateDialog open={isClientDialogOpen} onClose={handleClientDialogClose} client={client} />

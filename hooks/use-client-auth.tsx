@@ -7,14 +7,27 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile,
+  User
 } from "firebase/auth"
 import { useFirebase } from "@/components/firebase-provider"
 import { createClientProfile } from "@/lib/firebase"
 
-const ClientAuthContext = createContext(null)
+interface ClientAuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<any>;
+  signup: (email: string, password: string, userData: { name: string; companyName?: string }) => Promise<any>;
+  logout: () => Promise<void>;
+}
 
-export function ClientAuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+interface ClientAuthProviderProps {
+  children: React.ReactNode;
+}
+
+const ClientAuthContext = createContext<ClientAuthContextType | null>(null)
+
+export function ClientAuthProvider({ children }: ClientAuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const { auth, isInitialized } = useFirebase()
 
@@ -32,12 +45,12 @@ export function ClientAuthProvider({ children }) {
     return () => unsubscribe()
   }, [auth, isInitialized])
 
-  const login = async (email, password) => {
+  const login = async (email: string, password: string) => {
     if (!auth) throw new Error("Auth not initialized")
     return signInWithEmailAndPassword(auth, email, password)
   }
 
-  const signup = async (email, password, userData) => {
+  const signup = async (email: string, password: string, userData: { name: string; companyName?: string }) => {
     if (!auth) throw new Error("Auth not initialized")
 
     // Create the user account

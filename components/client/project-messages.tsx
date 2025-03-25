@@ -10,12 +10,29 @@ import { getProjectMessages, sendProjectMessage } from "@/lib/firebase"
 import { useClientAuth } from "@/hooks/use-client-auth"
 import { useToast } from "@/hooks/use-toast"
 
-export function ProjectMessages({ projectId }) {
-  const [messages, setMessages] = useState([])
+interface Message {
+  content: string;
+  senderId: string;
+  senderName: string;
+  senderRole: string;
+  timestamp: string;
+}
+
+interface ProjectMessagesProps {
+  projectId: string;
+}
+
+interface ClientUser {
+  uid: string;
+  displayName?: string;
+}
+
+export function ProjectMessages({ projectId }: ProjectMessagesProps) {
+  const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
   const [newMessage, setNewMessage] = useState("")
   const [sending, setSending] = useState(false)
-  const { user } = useClientAuth()
+  const { user } = useClientAuth() as { user: ClientUser | null }
   const { toast } = useToast()
 
   useEffect(() => {
@@ -23,7 +40,7 @@ export function ProjectMessages({ projectId }) {
       try {
         setLoading(true)
         const data = await getProjectMessages(projectId)
-        setMessages(data)
+        setMessages((data as unknown) as Message[])
       } catch (error) {
         console.error("Error fetching project messages:", error)
       } finally {
@@ -34,17 +51,16 @@ export function ProjectMessages({ projectId }) {
     fetchMessages()
 
     // Set up real-time listener for new messages
-    const unsubscribe = listenForMessages(projectId, (newMessages) => {
+    const unsubscribe = listenForMessages(projectId, (newMessages: Message[]) => {
       setMessages(newMessages)
     })
 
     return () => unsubscribe()
   }, [projectId])
 
-  const handleSendMessage = async (e) => {
+  const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-
-    if (!newMessage.trim()) return
+    if (!user || !newMessage.trim()) return
 
     setSending(true)
     try {
@@ -144,7 +160,7 @@ export function ProjectMessages({ projectId }) {
 }
 
 // Mock function for real-time listener
-function listenForMessages(projectId, callback) {
+function listenForMessages(projectId: string, callback: (messages: Message[]) => void) {
   // In a real implementation, this would use Firebase's onSnapshot
   // For now, we'll just return a no-op function
   return () => {}

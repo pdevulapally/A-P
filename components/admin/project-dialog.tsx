@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -19,8 +19,34 @@ import { Loader2, Plus, X } from "lucide-react"
 import { addProject, updateProject } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
 
-export function ProjectDialog({ open, onClose, project }) {
-  const [formData, setFormData] = useState({
+export interface ProjectData {
+  id?: string;
+  title: string;
+  slug: string;
+  description: string;
+  content: string;
+  category: string;
+  status: string;
+  client: string;
+  completionDate: string;
+  projectType: string;
+  duration: string;
+  liveUrl: string;
+  features: string[];
+  technologies: string[];
+  featuredImage: string;
+  gallery: string[];
+  createdAt: string;
+}
+
+interface ProjectDialogProps {
+  open: boolean;
+  onClose: (refresh?: boolean) => void;
+  project: ProjectData | null;
+}
+
+export function ProjectDialog({ open, onClose, project }: ProjectDialogProps) {
+  const [formData, setFormData] = useState<ProjectData>({
     title: "",
     slug: "",
     description: "",
@@ -36,6 +62,7 @@ export function ProjectDialog({ open, onClose, project }) {
     technologies: [],
     featuredImage: "",
     gallery: [],
+    createdAt: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [newFeature, setNewFeature] = useState("")
@@ -71,13 +98,14 @@ export function ProjectDialog({ open, onClose, project }) {
       technologies: [],
       featuredImage: "",
       gallery: [],
+      createdAt: "",
     })
     setNewFeature("")
     setNewTechnology("")
     setNewGalleryImage("")
   }
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
 
@@ -94,11 +122,11 @@ export function ProjectDialog({ open, onClose, project }) {
     }
   }
 
-  const handleSelectChange = (name, value) => {
+  const handleSelectChange = (name: keyof ProjectData, value: string) => {
     setFormData({ ...formData, [name]: value })
   }
 
-  const handleSwitchChange = (name, checked) => {
+  const handleSwitchChange = (name: keyof ProjectData, checked: boolean) => {
     setFormData({ ...formData, [name]: checked ? "published" : "draft" })
   }
 
@@ -112,7 +140,7 @@ export function ProjectDialog({ open, onClose, project }) {
     }
   }
 
-  const removeFeature = (index) => {
+  const removeFeature = (index: number) => {
     const updatedFeatures = [...formData.features]
     updatedFeatures.splice(index, 1)
     setFormData({ ...formData, features: updatedFeatures })
@@ -128,7 +156,7 @@ export function ProjectDialog({ open, onClose, project }) {
     }
   }
 
-  const removeTechnology = (index) => {
+  const removeTechnology = (index: number): void => {
     const updatedTechnologies = [...formData.technologies]
     updatedTechnologies.splice(index, 1)
     setFormData({ ...formData, technologies: updatedTechnologies })
@@ -144,18 +172,18 @@ export function ProjectDialog({ open, onClose, project }) {
     }
   }
 
-  const removeGalleryImage = (index) => {
+  const removeGalleryImage = (index: number): void => {
     const updatedGallery = [...formData.gallery]
     updatedGallery.splice(index, 1)
     setFormData({ ...formData, gallery: updatedGallery })
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     try {
-      if (project) {
+      if (project?.id) {
         await updateProject(project.id, formData)
         toast({
           title: "Success",

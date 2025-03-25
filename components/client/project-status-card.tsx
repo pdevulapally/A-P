@@ -3,8 +3,29 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
-export function ProjectStatusCard({ project }) {
-  const getStatusInfo = (status) => {
+interface Project {
+  status: string;
+  currentPhase: string;
+  phaseDescription: string;
+  milestones?: Array<{
+    title: string;
+    dueDate: string;
+    completed: boolean;
+  }>;
+  team?: Array<{
+    role: string;
+    name: string;
+  }>;
+}
+
+interface ProjectStatusCardProps {
+  project: Project | null;
+}
+
+export function ProjectStatusCard({ project }: ProjectStatusCardProps) {
+  if (!project) return null;
+
+  const getStatusInfo = (status: string) => {
     switch (status) {
       case "planning":
         return {

@@ -46,7 +46,7 @@ export default function AboutPreview() {
             className="relative aspect-video overflow-hidden rounded-xl"
           >
             <Image
-              src="/placeholder.svg?height=600&width=800"
+              src="/Images/team-working-together.png"
               alt="Team working together"
               width={800}
               height={600}

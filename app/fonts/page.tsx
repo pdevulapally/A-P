@@ -6,3 +6,9 @@ export async function GET() {
   return NextResponse.redirect("/fonts/Inter-Bold.ttf")
 }
 
+export const dynamic = 'force-dynamic'
+
+export default function FontsPage() {
+  return null
+}
+

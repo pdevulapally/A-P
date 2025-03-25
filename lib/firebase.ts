@@ -17,8 +17,9 @@ import {
   setDoc,
 } from "firebase/firestore"
 import { getFirestore } from "firebase/firestore"
-import { initializeApp } from "firebase/app"
-import { getAuth, Auth } from "firebase/auth"
+import { getApps, initializeApp } from "firebase/app"
+import { getAuth, Auth, signInWithEmailAndPassword, signOut } from "firebase/auth"
+import { TeamMember } from "@/lib/types"
 
 // Add this function at the top of the file
 function handleFirestoreError(error: any, fallbackValue: any = null) {
@@ -36,30 +37,23 @@ function handleFirestoreError(error: any, fallbackValue: any = null) {
   return fallbackValue
 }
 
-// Initialize Firebase if not already initialized
-import { Firestore } from "firebase/firestore"
+// Initialize Firebase only if it hasn't been initialized
+let app = getApps().length === 0 
+  ? initializeApp({
+      apiKey: "AIzaSyAObe4TGNbvy63mkaK1F75703CWaBugATY",
+      authDomain: "arjun-and-preetham.firebaseapp.com",
+      projectId: "arjun-and-preetham",
+      storageBucket: "arjun-and-preetham.firebasestorage.app",
+      messagingSenderId: "234923795312",
+      appId: "1:234923795312:web:922ccd131c6aa542d6a5b5",
+      measurementId: "G-VPD056V2Z0",
+    })
+  : getApps()[0]
 
-let db: Firestore | undefined
-let auth: Auth | undefined
+export const db = getFirestore(app)
+export const auth = getAuth(app)
+
 let isInitialized = false
-try {
-  const firebaseConfig = {
-    apiKey: "AIzaSyAObe4TGNbvy63mkaK1F75703CWaBugATY",
-    authDomain: "arjun-and-preetham.firebaseapp.com",
-    projectId: "arjun-and-preetham",
-    storageBucket: "arjun-and-preetham.firebasestorage.app",
-    messagingSenderId: "234923795312",
-    appId: "1:234923795312:web:922ccd131c6aa542d6a5b5",
-    measurementId: "G-VPD056V2Z0",
-  }
-
-  const app = initializeApp(firebaseConfig)
-  db = getFirestore(app)
-  auth = getAuth(app)
-  isInitialized = true
-} catch (error) {
-  console.error("Firebase initialization error:", error)
-}
 
 // Function to enable/disable network for testing
 export async function toggleFirebaseNetwork(enable = true) {
@@ -308,7 +302,11 @@ export async function getAllInquiries() {
 
     return querySnapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data(),
+      name: doc.data().name || "",
+      email: doc.data().email || "",
+      subject: doc.data().subject || "",
+      status: doc.data().status || "pending",
+      message: doc.data().message || "",
       createdAt: doc.data().createdAt?.toDate().toISOString() || new Date().toISOString(),
     }))
   } catch (error) {
@@ -818,6 +816,136 @@ export async function updateProjectStatus(projectId: string, statusData: any) {
     return { success: true }
   } catch (error) {
     console.error("Error updating project status:", error)
+    throw error
+  }
+}
+
+export async function getClientIds() {
+  if (!db) throw new Error("Firestore not initialized")
+
+  try {
+    const querySnapshot = await getDocs(collection(db, "clients"))
+    return querySnapshot.docs.map(doc => doc.id)
+  } catch (error) {
+    console.error("Error getting client IDs:", error)
+    return []
+  }
+}
+
+interface ProjectWithId {
+  id: string;
+}
+
+export async function getProjectIds() {
+  const projects = await getAllProjects()
+  return projects.map((project: ProjectWithId) => project.id)
+}
+
+export async function adminLogin(email: string, password: string) {
+  if (!auth) throw new Error("Auth not initialized")
+  
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password)
+    const token = await userCredential.user.getIdTokenResult()
+    
+    if (!token.claims.admin) {
+      await auth.signOut()
+      throw new Error("Not authorized as admin")
+    }
+    
+    return userCredential
+  } catch (error) {
+    console.error("Admin login error:", error)
+    throw error
+  }
+}
+
+// Settings Management
+export async function getSettings() {
+  if (!db) return handleFirestoreError(new Error("Firestore not initialized"))
+
+  try {
+    const settingsDoc = await getDoc(doc(db, "settings", "site"))
+    return settingsDoc.exists() ? settingsDoc.data() : null
+  } catch (error) {
+    return handleFirestoreError(error)
+  }
+}
+
+export async function updateSettings(settings: any) {
+  if (!db) throw new Error("Firestore not initialized")
+
+  try {
+    await setDoc(doc(db, "settings", "site"), settings)
+    return { success: true }
+  } catch (error) {
+    console.error("Error updating settings:", error)
+    throw error
+  }
+}
+
+export { signOut }
+
+// Team Members
+export async function addTeamMember(memberData: any) {
+  if (!db) throw new Error("Firestore not initialized")
+
+  try {
+    const docRef = await addDoc(collection(db, "team"), {
+      ...memberData,
+      createdAt: serverTimestamp(),
+    })
+    return { success: true, id: docRef.id }
+  } catch (error) {
+    console.error("Error adding team member:", error)
+    throw error
+  }
+}
+
+export async function updateTeamMember(id: string, memberData: any) {
+  if (!db) throw new Error("Firestore not initialized")
+
+  try {
+    await updateDoc(doc(db, "team", id), {
+      ...memberData,
+      updatedAt: serverTimestamp(),
+    })
+    return { success: true }
+  } catch (error) {
+    console.error("Error updating team member:", error)
+    throw error
+  }
+}
+
+export async function getAllTeamMembers(): Promise<TeamMember[]> {
+  if (!db) throw new Error("Firestore not initialized")
+
+  try {
+    const teamRef = collection(db, "team")
+    const q = query(teamRef, orderBy("name"))
+    const querySnapshot = await getDocs(q)
+
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      name: doc.data().name,
+      role: doc.data().role,
+      department: doc.data().department,
+      email: doc.data().email,
+    }))
+  } catch (error) {
+    console.error("Error getting team members:", error)
+    throw error
+  }
+}
+
+export async function deleteTeamMember(id: string) {
+  if (!db) throw new Error("Firestore not initialized")
+
+  try {
+    await deleteDoc(doc(db, "team", id))
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting team member:", error)
     throw error
   }
 }
